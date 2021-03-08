@@ -2,7 +2,7 @@ public enum Type {
     NUMBER("<number>"),
     STRING("<string>"),
     SYMBOL("<symbol>"),
-    ADD("<+>"),
+    OPERATION("<operation>"),
     SEMICOLON("<;>"),
     L_PAREN("<(>"),
     R_PAREN("<)>"),

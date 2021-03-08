@@ -68,7 +68,7 @@ public class Lexer {
 
             if ("\t\n ".indexOf(c) != -1) continue; //disregard any whitespace
 
-            if (c == '+') tokens.add(new Token(Type.ADD, "")); //add addition token if c is +
+            if ("+-*/".indexOf(c) != -1) tokens.add(new Token(Type.OPERATION, String.format("%c", c))); //add operation token if c is an operator
             if (c == ';') tokens.add(new Token(Type.SEMICOLON, "")); //add semicolon token if c is ;
             if (c == '(') tokens.add(new Token(Type.L_PAREN, "")); //add left paren token if c is (
             if (c == ')') tokens.add(new Token(Type.R_PAREN, "")); //add right paren token if c is )
