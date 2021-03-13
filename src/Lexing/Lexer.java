@@ -23,7 +23,7 @@ public class Lexer {
      */
     private Token scanNumber(char first, CharacterIterator chars) throws IllegalCharException {
         StringBuilder ret = new StringBuilder(String.format("%c", first));
-        int dotCount = 0;
+        int dotCount = first == '.' ? 1 : 0;
         while (chars.current() != CharacterIterator.DONE && charToString(chars.current()).matches(Type.NUMBER.REST_REGEX)) {
             if(chars.current() == '.') dotCount++;
             ret.append(chars.current());

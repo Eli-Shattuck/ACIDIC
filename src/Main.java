@@ -22,8 +22,8 @@ public class Main {
     public static void main(String[] args) throws EndOfStringException, IllegalCharException {
         Lexer lexer = new Lexer();
         //String program = "PRINT (\"HELLO, WORLD!\");";
-        //String program = "FOO = (3.1415 + 3.) + .12;";
-        String program = "FOO = \"BAR\";";
+        String program = "FOO = (3.1415 + 3.) + .12 - (1+2);";
+        //String program = "FOO = \"BAR\";";
         //String program = "foo = \"bar\";"; //this program should fail
 //        String program =
 //                "FUNCTION FOO (BAR, BAZ) {\n" +
