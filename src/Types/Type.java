@@ -11,11 +11,13 @@ public enum Type {
     SYMBOL("<symbol>","[_A-Z]","[_A-Z0-9]"),
     ADD("<+>","[\\+]",null),
     SUB("<->","[\\-]",null),
+    ASSIGNMENT("<=>","[\\=]",null),
     L_PAREN("<(>", "[\\(]", null),
     R_PAREN("<)>", "[\\)]", null),
     R_CURLY_BRACKET("<{>", "[\\{]", null),
     L_CURLY_BRACKET("<}>", "[\\}]", null),
-    COMMA("<,>", "[\\,]", null);
+    COMMA("<,>", "[\\,]", null),
+    SEMICOLON("<;>", "[\\;]", null);
 
     private String rep;
     public final String FIRST_REGEX;
@@ -28,10 +30,10 @@ public enum Type {
     }
 
     public static List<Type> getAllPunctuation() {
-        return Arrays.asList(L_PAREN,R_PAREN,R_CURLY_BRACKET,L_CURLY_BRACKET,COMMA);
+        return Arrays.asList(L_PAREN,R_PAREN,R_CURLY_BRACKET,L_CURLY_BRACKET,COMMA,SEMICOLON);
     }
     public static List<Type> getAllOperators() {
-        return Arrays.asList(ADD, SUB);
+        return Arrays.asList(ADD, SUB, ASSIGNMENT);
     }
 
     @Override

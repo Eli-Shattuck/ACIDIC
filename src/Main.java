@@ -23,12 +23,12 @@ public class Main {
         Lexer lexer = new Lexer();
         //String program = "PRINT (\"HELLO, WORLD!\");";
         //String program = "FOO = (3.1415 + 3.) + .12;";
-        //String program = "FOO = \"BAR\";";
+        String program = "FOO = \"BAR\";";
         //String program = "foo = \"bar\";"; //this program should fail
-        String program =
-                "FUNCTION FOO (BAR, BAZ) {\n" +
-                        "\tRETURN BAR-BAZ\n" +
-                        "}";
+//        String program =
+//                "FUNCTION FOO (BAR, BAZ) {\n" +
+//                        "\tRETURN BAR-BAZ;\n" +
+//                        "}";
         Iterator<Token> tokens = lexer.lex(program);
         while (tokens.hasNext())
             System.out.println(tokens.next());
