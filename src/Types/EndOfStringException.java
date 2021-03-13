@@ -1,3 +1,5 @@
+package Types;
+
 public class EndOfStringException extends Exception {
     private String msg;
     public EndOfStringException(String msg) {

@@ -1,3 +1,5 @@
+package Types;
+
 /*
  * class to hold a token represented as a Type, and a string holding a Value
  */
