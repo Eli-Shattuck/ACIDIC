@@ -22,6 +22,6 @@ public class Token {
 
     @Override
     public String toString() {
-        return String.format("Token{%s : \"%s\"}", type.toString(), value);
+        return String.format("Token{%s : \"%s\"}", type.toString(), value == null ? "" : value);
     }
 }

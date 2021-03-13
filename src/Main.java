@@ -1,4 +1,5 @@
 import Lexing.Lexer;
+import Types.IllegalCharException;
 import Types.Token;
 import Types.EndOfStringException;
 
@@ -18,7 +19,7 @@ public class Main {
      * }
      */
 
-    public static void main(String[] args) throws EndOfStringException {
+    public static void main(String[] args) throws EndOfStringException, IllegalCharException {
         Lexer lexer = new Lexer();
         //String program = "PRINT (\"HELLO, WORLD!\");";
         //String program = "FOO = (3.1415 + 3.) + .12;";
@@ -26,7 +27,7 @@ public class Main {
         //String program = "foo = \"bar\";"; //this program should fail
         String program =
                 "FUNCTION FOO (BAR, BAZ) {\n" +
-                        "\tRETURN BAR*BAZ\n" +
+                        "\tRETURN BAR-BAZ\n" +
                         "}";
         Iterator<Token> tokens = lexer.lex(program);
         while (tokens.hasNext())
