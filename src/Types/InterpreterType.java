@@ -1,6 +1,9 @@
 package Types;
 
+import Interpreting.Interpreter;
+import Types.Exceptions.SymbolNotFound;
 import Types.Values.Number;
+import Types.Values.String;
 import Types.Values.Value;
 
 import java.util.function.Function;
@@ -44,6 +47,9 @@ public enum InterpreterType {
         if(node.getLexToken().getLexType() == LexType.DIV) {
             return Number.div(a,b);
         }
+        if(node.getLexToken().getLexType() == LexType.POW) {
+            return Number.pow(a,b);
+        }
         return null;
     }),
     UNARY_OPERATOR_NODE("<UNARY OPERATOR NODE>", (node)->{
@@ -59,18 +65,43 @@ public enum InterpreterType {
         if(node.getLexToken().getLexType() == LexType.SUB) return Number.invert(a);
 
         return null;
-    });
+    }),
+    SYMBOL_NODE("<SYMBOL NODE>", (node)->{
+        return new Result<Value>().success(new String(node.getLexToken().getValue()));
+    }),
+    VAR_ACCESS_NODE("<VAR ACCESS NODE>", (node)->{
+        Result<Value> res = new Result<>();
+        Value var = Interpreter.getVarTable().get(node.getLexToken().getValue());
+        if(var == null) return res.failure(new SymbolNotFound("SYMBOL NOT FOUND"));
+        return res.success(var);
+    }),
+    VAR_ASSIGNMENT_NODE("<VAR ASSIGNMENT NODE>", (node)->{
+        ExpTreeNode var = node.getChildren().get(0);
+        ExpTreeNode val = node.getChildren().get(1);
 
-    private String name;
+        Result<Value> ret = new Result<>();
+
+        Value a = ret.register(var.getInterpreterType().getOnVisit().apply(var));
+        if(ret.error()) return ret;
+        Value b = ret.register(val.getInterpreterType().getOnVisit().apply(val));
+        if(ret.error()) return ret;
+
+        if(a instanceof String){
+            Interpreter.getVarTable().put(((String) a).getVal(), b);
+        }
+
+        return ret.success(b);
+    });
+    private java.lang.String name;
     private Function<ExpTreeNode, Result<Value>> onVisit;
 
-    InterpreterType(String name, Function<ExpTreeNode, Result<Value>> onVisit) {
+    InterpreterType(java.lang.String name, Function<ExpTreeNode, Result<Value>> onVisit) {
         this.name = name;
         this.onVisit = onVisit;
     }
 
     @Override
-    public String toString() {
+    public java.lang.String toString() {
         return name;
     }
 

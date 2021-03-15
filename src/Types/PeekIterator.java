@@ -26,4 +26,11 @@ public class PeekIterator<T> extends LinkedList<T> {
         }
         return get(++index);
     }
+
+    public T peekPrevious() {
+        if(index <= 0) {
+            return (T)END_OF_LIST;
+        }
+        return get(index-1);
+    }
 }

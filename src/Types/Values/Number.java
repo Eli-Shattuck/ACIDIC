@@ -94,6 +94,28 @@ public class Number extends Value{
         return null;
     }
 
+    public static Result<Value> pow(Value a, Value b) {
+        if(a instanceof Number && b instanceof Number) {
+            Number x = (Number)a;
+            Number y = (Number)b;
+
+            if((y.isInt ? y.iVal : y.fVal) == 0.0 && (x.isInt ? x.iVal : x.fVal) == 0.0)
+                return new Result<>(
+                        null,
+                        new RunTimeException("CANNOT RAISE 0 TO THE 0TH POWER")
+                );
+
+            return new Result<>(
+                    new Number(
+                            Math.pow((x.isInt ? x.iVal : x.fVal), (y.isInt ? y.iVal : y.fVal)),
+                            x.isInt && y.isInt
+                    ),
+                    null
+            );
+        }
+        return null;
+    }
+
     public static Result<Value> invert(Value a) {
         if(a instanceof Number) {
             Number x = (Number)a;
@@ -103,7 +125,7 @@ public class Number extends Value{
     }
 
     @Override
-    public String toString() {
+    public java.lang.String toString() {
         if(isInt) return ""+iVal;
         return ""+fVal;
     }

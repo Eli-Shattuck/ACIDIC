@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ExpTreeNode {
     private LexToken lexToken;
-    InterpreterType interpreterType;
+    private InterpreterType interpreterType;
     private List<ExpTreeNode> children;
 
     public ExpTreeNode(LexToken lexToken, InterpreterType interpreterType, List<ExpTreeNode> children) {

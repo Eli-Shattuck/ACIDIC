@@ -13,16 +13,25 @@ import java.util.function.Function;
  * class that parses an iterator of Lex Tokens, into an expression tree,
  * following this grammar
  *
- * EXP --> TRM + TRM | TRM - TRM
- * TRM --> FAC * FAC | FAC / FAC
- * FAC --> +NUM | -NUM | INT | FLT | (EXP)
- * INT --> an in primate
- * FLT --> a floating point primitive
+ * EXPRESSION   (EXP)
+ * TERM         (TRM)
+ * POWER        (POW)
+ * FACTOR       (FAC)
+ * KEYWORD      (KEY)
+ * IDENTIFIER   (IDN)
+ * ASSIGNMENT   (ASN)
+ *
+ * EXP --> KEY:DEF IDN ASN EXP | TRM + TRM | TRM - TRM | TRM
+ * TRM --> POW * POW | POW / POW | +TRM | -TRM | POW
+ * POW --> FAC ** POW | FAC
+ * FAC --> INT | FLT | IDN | (EXP)
  */
 public class Parser {
     private static HashSet<LexType> EXP_OPS = new HashSet<>(Arrays.asList(LexType.ADD, LexType.SUB));
     private static HashSet<LexType> TRM_OPS = new HashSet<>(Arrays.asList(LexType.MUL, LexType.DIV));
-    private static HashSet<LexType> UNA_OPS = new HashSet<>(Arrays.asList(LexType.ADD, LexType.SUB));
+    private static HashSet<LexType> TRM_UNARY_OPS = new HashSet<>(Arrays.asList(LexType.ADD, LexType.SUB));
+    private static HashSet<LexType> POW_OPS = new HashSet<>(Arrays.asList(LexType.POW));
+
 
     public static Result<ExpTreeNode> Parse(List<LexToken> lexTokens){
         PeekIterator<LexToken> pit = new PeekIterator<>(lexTokens);
@@ -31,15 +40,15 @@ public class Parser {
         return res;
     }
 
-    private static Result<ExpTreeNode> getBinOp(PeekIterator<LexToken> lexTokens, Function<PeekIterator<LexToken>, Result<ExpTreeNode>> getter, Set<LexType> validLexTypes) {
+    private static Result<ExpTreeNode> getBinOp(PeekIterator<LexToken> lexTokens, Function<PeekIterator<LexToken>, Result<ExpTreeNode>> preGetter, Function<PeekIterator<LexToken>, Result<ExpTreeNode>> postGetter, Set<LexType> validLexTypes) {
         Result<ExpTreeNode> res = new Result<>();
-        ExpTreeNode left = res.register(getter.apply(lexTokens));
+        ExpTreeNode left = res.register(preGetter.apply(lexTokens));
         if (res.error()) return res;
         while(lexTokens.getCurrent() != PeekIterator.END_OF_LIST && validLexTypes.contains(lexTokens.getCurrent().getLexType())) {
             LexToken opLexToken = lexTokens.getCurrent();
             if(opLexToken == PeekIterator.END_OF_LIST) return res.failure(new IllegalSyntaxException("UNEXPECTED EOF"));
             lexTokens.next();
-            ExpTreeNode right = res.register(getter.apply(lexTokens));
+            ExpTreeNode right = res.register(postGetter.apply(lexTokens));
             if (res.error()) return res;
             left = new ExpTreeNode(opLexToken, InterpreterType.BIN_OPERATOR_NODE, left, right);
         }
@@ -47,25 +56,60 @@ public class Parser {
     }
 
     private static Result<ExpTreeNode> getEXP(PeekIterator<LexToken> lexTokens) {
-        return getBinOp(lexTokens, Parser::getTRM, EXP_OPS);
+        if(lexTokens.getCurrent().getLexType() == LexType.KEYWORD && lexTokens.getCurrent().getValue().equals(Keywords.DEF.toString())) { //if current token is the keyword 'DEF'
+            Result<ExpTreeNode> res = new Result<>();
+            if(lexTokens.next().getLexType() == LexType.SYMBOL) {
+                LexToken symb = lexTokens.getCurrent();
+                if(lexTokens.next().getLexType() == LexType.ASSIGNMENT) {
+                    LexToken asn = lexTokens.getCurrent();
+                    lexTokens.next();
+                    ExpTreeNode val = res.register(getEXP(lexTokens));
+                    if(res.error()) return res;
+                    return res.success(
+                            new ExpTreeNode(
+                                    asn,
+                                    InterpreterType.VAR_ASSIGNMENT_NODE,
+                                    new ExpTreeNode(symb, InterpreterType.SYMBOL_NODE),
+                                    val
+                            )
+                    );
+                } else {
+                    return res.failure(new IllegalSyntaxException(String.format("EXPECTED %s AFTER %s", LexType.ASSIGNMENT, LexType.SYMBOL)));
+                }
+            } else {
+                return res.failure(new IllegalSyntaxException(String.format("EXPECTED %s AFTER %s:%s", LexType.SYMBOL, LexType.KEYWORD, Keywords.DEF)));
+            }
+        }
+
+        return getBinOp(lexTokens, Parser::getTRM, Parser::getTRM, EXP_OPS);
     }
 
     private static Result<ExpTreeNode> getTRM(PeekIterator<LexToken> lexTokens) {
-        return getBinOp(lexTokens, Parser::getFAC, TRM_OPS);
+        if(TRM_UNARY_OPS.contains(lexTokens.getCurrent().getLexType())) {
+            Result<ExpTreeNode> res = new Result<>();
+            LexToken c = lexTokens.getCurrent();
+            lexTokens.next();
+            ExpTreeNode factor = res.register(getTRM(lexTokens));
+            if(res.error()) return res;
+            return res.success(new ExpTreeNode(c, InterpreterType.UNARY_OPERATOR_NODE, factor));
+        }
+        return getBinOp(lexTokens, Parser::getPOW, Parser::getPOW, TRM_OPS);
+    }
+
+    private static Result<ExpTreeNode> getPOW(PeekIterator<LexToken> lexTokens) {
+        return getBinOp(lexTokens, Parser::getFAC, Parser::getPOW, POW_OPS);
     }
 
     private static Result<ExpTreeNode> getFAC(PeekIterator<LexToken> lexTokens) {
         Result<ExpTreeNode> res = new Result<>();
         LexToken lexToken = lexTokens.getCurrent();
         if(lexToken == PeekIterator.END_OF_LIST) return res.failure(new IllegalSyntaxException("UNEXPECTED EOF"));
-        if(UNA_OPS.contains(lexToken.getLexType())) {
-            lexTokens.next();
-            ExpTreeNode factor = res.register(getFAC(lexTokens));
-            if(res.error()) return res;
-            return res.success(new ExpTreeNode(lexToken, InterpreterType.UNARY_OPERATOR_NODE, factor));
-        } else if(lexToken.getLexType() == LexType.INT || lexToken.getLexType() == LexType.FLOAT) {
+        if(lexToken.getLexType() == LexType.INT || lexToken.getLexType() == LexType.FLOAT) {
             lexTokens.next();
             return res.success(new ExpTreeNode(lexToken, InterpreterType.NUMBER_NODE));
+        } else if(lexToken.getLexType() == LexType.SYMBOL) {
+            lexTokens.next();
+            return res.success(new ExpTreeNode(lexToken, InterpreterType.VAR_ACCESS_NODE));
         } else if(lexToken.getLexType() == LexType.L_PAREN) {
             lexTokens.next();
             ExpTreeNode expression = res.register(getEXP(lexTokens));

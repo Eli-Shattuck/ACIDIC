@@ -10,6 +10,8 @@ public enum LexType {
     FLOAT(          "<FLOAT>",  null,       null),
     STRING(         "<STRING>", "[\"]",     "[\"]"),
     SYMBOL(         "<SYMBOL>", "[_A-Z]",   "[_A-Z0-9]"),
+    KEYWORD(        "<KEYWORD>","[_A-Z]",   "[_A-Z0-9]"),
+    POW(            "<**>",     "[\\*]",    null),
     ADD(            "<+>",      "[\\+]",    null),
     SUB(            "<->",      "[\\-]",    null),
     MUL(            "<*>",      "[\\*]",    null),
@@ -39,7 +41,7 @@ public enum LexType {
         return new HashSet<>(getAllPunctuationList());
     }
     public static List<LexType> getAllOperatorsList() {
-        return Arrays.asList(ADD, SUB, MUL, DIV, ASSIGNMENT);
+        return Arrays.asList(POW, ADD, SUB, MUL, DIV, ASSIGNMENT);
     }
     public static HashSet<LexType> getAllOperatorsSet() {
         return new HashSet<>(getAllOperatorsList());

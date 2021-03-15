@@ -47,6 +47,7 @@ public class Lexer {
             ret.append(chars.current());
             chars.next();
         }
+        if(Keywords.KEYWORD_SET.contains(ret.toString())) return result.success(Arrays.asList(new LexToken(LexType.KEYWORD, ret.toString())));
         return result.success(Arrays.asList(new LexToken(LexType.SYMBOL, ret.toString())));
     }
 
@@ -88,7 +89,16 @@ public class Lexer {
             if ("\t\n ".indexOf(c) != -1) continue; //disregard any whitespace
             for(LexType op: LexType.getAllOperatorsList()) {
                 if (charToString(c).matches(op.FIRST_REGEX)) {
-                    lexTokens.add(new LexToken(op, null)); //add operation token if c is an operator
+                    if(op == LexType.POW) {
+                        if(charToString(program.current()).matches(op.FIRST_REGEX)) {
+                            program.next();
+                            lexTokens.add(new LexToken(op, null));
+                            break;
+                        }
+                    } else {
+                        lexTokens.add(new LexToken(op, null)); //add operation token if c is an operator
+                        break;
+                    }
                 }
             }
             for(LexType punc: LexType.getAllPunctuationList()) {
@@ -105,7 +115,7 @@ public class Lexer {
                 if(res.error()) return res;
             }
             if (charToString(c).matches(LexType.SYMBOL.FIRST_REGEX)) {
-                lexTokens.addAll(res.register(scanSymbol(c, program))); //add symbol token if c matches a symbol
+                lexTokens.addAll(res.register(scanSymbol(c, program))); //add symbol or keyword if token if c matches a symbol
                 if(res.error()) return res;
             }
             if(lexTokens.size() == currTokens){

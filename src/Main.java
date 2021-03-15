@@ -23,9 +23,9 @@ public class Main {
 
     public static void main(String[] args) {
         //String program = "PRINT (\"HELLO, WORLD!\");";
-        //String program = "FOO = (3.1415 + 3.) + .12 - (1+2);";
-        //String program = "FOO = \"BAR\";";
-        //String program = "foo = \"bar\";"; //this program should fail
+        //String program = "DEF FOO = (3.1415 + 3.) + .12 - (1+2);";
+        //String program = "DEF FOO = \"BAR\";";
+        //String program = "DEF foo = \"bar\";"; //this program should fail
 //        String program =
 //                "FUNCTION FOO (BAR, BAZ) {\n" +
 //                        "\tRETURN BAR-BAZ;\n" +
@@ -38,7 +38,7 @@ public class Main {
                 System.err.println(lexTokens.getError());
                 continue;
             }
-//            for (LexToken lexToken : lexTokens)
+//            for (LexToken lexToken : lexTokens.getVal())
 //                System.out.println(lexToken);
 
             Result<ExpTreeNode> parsedTokens = Parser.Parse(lexTokens.getVal());
@@ -46,7 +46,7 @@ public class Main {
                 System.err.println(parsedTokens.getError());
                 continue;
             }
-//            System.out.println(parsedTokens.getTree());
+            //System.out.println(parsedTokens.getVal());
 
             Result<Value> result = Interpreter.Interpret(parsedTokens.getVal());
             if (result.error()) {
